@@ -1,0 +1,55 @@
+{
+  "name": "foundation-server-v2",
+  "version": "0.0.1",
+  "description": "An extremely efficient, highly scalable, all-in-one, easy to setup cryptocurrency mining pool",
+  "keywords": [
+    "stratum",
+    "mining",
+    "pool",
+    "server",
+    "poolserver",
+    "bitcoin",
+    "litecoin",
+    "scrypt"
+  ],
+  "homepage": "https://github.com/blinkhash/foundation-server-v2",
+  "bugs": {
+    "url": "https://github.com/blinkhash/foundation-server-v2/issues"
+  },
+  "license": "GPL-2.0",
+  "author": {
+    "name": "Nick Sarris"
+  },
+  "jest": {
+    "verbose": true,
+    "collectCoverage": true,
+    "coveragePathIgnorePatterns": [
+      "configs/",
+      ".mock.js"
+    ]
+  },
+  "scripts": {
+    "start": "nodemon scripts/main.js",
+    "clean": "eslint . --ext .js --ignore-pattern node_modules/",
+    "clean:fix": "eslint . --ext .js --fix --ignore-pattern node_modules/",
+    "test": "jest --coverage",
+    "deploy": "npm run clean:fix && npm run test"
+  },
+  "contributors": [],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/blinkhash/foundation-server-v2.git"
+  },
+  "dependencies": {
+    "foundation-multi-hashing": "0.1.1"
+  },
+  "devDependencies": {
+    "codecov": "^3.8.1",
+    "eslint": "^7.23.0",
+    "jest": "^26.6.3"
+  },
+  "engines": {
+    "node": ">=12.16"
+  },
+  "readmeFilename": "README.md"
+}
