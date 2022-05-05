@@ -67,13 +67,13 @@ const Difficulty = function(config) {
     _this.queue = [];
     const newDifference = parseFloat((client.difficulty * curDifference).toFixed(8));
     _this.emit('newDifficulty', client, newDifference);
-  }
+  };
 
   // Handle Individual Clients
   this.handleClient = function(client) {
     client.on('submit', () => _this.handleDifficulty(client));
   };
-}
+};
 
 module.exports = Difficulty;
 Difficulty.prototype.__proto__ = events.EventEmitter.prototype;

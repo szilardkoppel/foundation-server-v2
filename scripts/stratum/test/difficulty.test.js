@@ -48,7 +48,7 @@ describe('Test difficulty functionality', () => {
     difficulty.on('newDifficulty', (client, current) => {
       expect(current).toBe(8);
       expect(difficulty.queue.length).toBe(0);
-      done()
+      done();
     });
     client.emit('submit');
   });
@@ -92,7 +92,7 @@ describe('Test difficulty functionality', () => {
     difficulty.on('newDifficulty', (client, current) => {
       expect(current).toBe(8);
       expect(difficulty.queue.length).toBe(0);
-      done()
+      done();
     });
     difficulty.handleDifficulty(client);
   });
@@ -106,7 +106,7 @@ describe('Test difficulty functionality', () => {
     difficulty.on('newDifficulty', (client, current) => {
       expect(current).toBe(144);
       expect(difficulty.queue.length).toBe(0);
-      done()
+      done();
     });
     difficulty.handleDifficulty(client);
   });
@@ -120,7 +120,7 @@ describe('Test difficulty functionality', () => {
     difficulty.on('newDifficulty', (client, current) => {
       expect(current).toBe(13.30434783);
       expect(difficulty.queue.length).toBe(0);
-      done()
+      done();
     });
     difficulty.handleDifficulty(client);
   });
@@ -135,7 +135,7 @@ describe('Test difficulty functionality', () => {
     difficulty.on('newDifficulty', (client, current) => {
       expect(current).toBe(512);
       expect(difficulty.queue.length).toBe(0);
-      done()
+      done();
     });
     difficulty.handleDifficulty(client);
   });

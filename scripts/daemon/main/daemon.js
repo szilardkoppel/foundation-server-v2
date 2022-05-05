@@ -26,7 +26,7 @@ const Daemon = function(config, daemons) {
     Object.keys(_this.responses).forEach((key) => {
       if (_this.responses[key].time < cacheTime) delete _this.responses[key];
     });
-  }
+  };
 
   // Handle Setting Up Daemon Instances
   this.checkInstances = function(callback) {
@@ -34,7 +34,7 @@ const Daemon = function(config, daemons) {
     _this.interface.once('online', () => callback(false, null));
     _this.interface.on('failed', (errors) => callback(true, JSON.stringify(errors)));
     _this.interface.checkInitialized(() => {});
-  }
+  };
 
   // Handle Sending RPC Commands
   this.sendCommands = function(requests, cacheable, streaming, callback) {
@@ -56,8 +56,8 @@ const Daemon = function(config, daemons) {
       callback(result);
       _this.checkCache();
     });
-  }
-}
+  };
+};
 
 module.exports = Daemon;
 Daemon.prototype.__proto__ = events.EventEmitter.prototype;

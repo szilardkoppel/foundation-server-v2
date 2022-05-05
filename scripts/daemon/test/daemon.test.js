@@ -13,7 +13,7 @@ const config = {
     'cacheInterval': 1000,
     'cacheRemovalInterval': 5000,
   }
-}
+};
 
 const daemons = [{
   'host': '127.0.0.1',
@@ -100,7 +100,7 @@ describe('Test daemon functionality', () => {
     const daemon = new Daemon(configCopy, daemonsCopy);
     daemon.checkInstances((error, response) => {
       expect(error).toBe(true);
-      expect(response).toBe("[{\"error\":true,\"result\":\"Unauthorized RPC access. Invalid RPC username or password\",\"instance\":\"127.0.0.1\",\"data\":\"{\\\"error\\\":null,\\\"result\\\":null,\\\"instance\\\":\\\"nocktest\\\"}\"}]");
+      expect(response).toBe('[{"error":true,"result":"Unauthorized RPC access. Invalid RPC username or password","instance":"127.0.0.1","data":"{\\"error\\":null,\\"result\\":null,\\"instance\\":\\"nocktest\\"}"}]');
       nock.cleanAll();
       done();
     });
@@ -118,7 +118,7 @@ describe('Test daemon functionality', () => {
     const daemon = new Daemon(configCopy, daemonsCopy);
     const requests = [['getblocktemplate', []]];
     const expected = [{'data': '{"error":null,"result":null,"instance":"nocktest"}', 'error': false, 'instance': '127.0.0.1', 'result': null}];
-    daemon.checkInstances((error, response) => {
+    daemon.checkInstances(() => {
       daemon.sendCommands(requests, true, false, (response) => {
         const serialized = JSON.stringify(requests);
         const current = daemon.responses[serialized];
@@ -143,7 +143,7 @@ describe('Test daemon functionality', () => {
     const daemon = new Daemon(configCopy, daemonsCopy);
     const requests = [['getblocktemplate', []]];
     const expected = [{'data': '{"error":null,"result":null,"instance":"nocktest"}', 'error': false, 'instance': '127.0.0.1', 'result': null}];
-    daemon.checkInstances((error, response) => {
+    daemon.checkInstances(() => {
       daemon.sendCommands(requests, true, false, (response) => {
         const serialized = JSON.stringify(requests);
         const current = daemon.responses[serialized];
@@ -171,7 +171,7 @@ describe('Test daemon functionality', () => {
     const daemon = new Daemon(configCopy, daemonsCopy);
     const requests = [['getblocktemplate', []]];
     const expected = [{'data': '{"error":null,"result":null,"instance":"nocktest"}', 'error': false, 'instance': '127.0.0.1', 'result': null}];
-    daemon.checkInstances((error, response) => {
+    daemon.checkInstances(() => {
       daemon.sendCommands(requests, true, false, (response1) => {
         const serialized = JSON.stringify(requests);
         const current1 = daemon.responses[serialized];
@@ -190,7 +190,7 @@ describe('Test daemon functionality', () => {
     });
   });
 
-  test('Test daemon commands [1]', (done) => {
+  test('Test daemon commands [4]', (done) => {
     MockDate.set(1634742080841);
     nock('http://127.0.0.1:8332')
       .post('/', body => body.method === 'getblocktemplate')
@@ -202,7 +202,7 @@ describe('Test daemon functionality', () => {
     const daemon = new Daemon({ settings: {} }, daemonsCopy);
     const requests = [['getblocktemplate', []]];
     const expected = [{'data': '{"error":null,"result":null,"instance":"nocktest"}', 'error': false, 'instance': '127.0.0.1', 'result': null}];
-    daemon.checkInstances((error, response) => {
+    daemon.checkInstances(() => {
       daemon.sendCommands(requests, true, false, (response) => {
         const serialized = JSON.stringify(requests);
         const current = daemon.responses[serialized];
