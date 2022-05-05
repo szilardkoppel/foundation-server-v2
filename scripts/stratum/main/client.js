@@ -10,15 +10,15 @@ const events = require('events');
 ////////////////////////////////////////////////////////////////////////////////
 
 // Main Client Function
-const Client = function(options) {
+const Client = function(config) {
 
   const _this = this;
-  this.options = options;
-  this.authorized = false;
-  this.socket = _this.options.socket;
+  this.config = config;
+  this.socket = _this.config.socket;
 
   // Client Variables
   this.activity = Date.now();
+  this.authorized = false;
   this.difficulty = 0;
   this.messages = '';
   this.shares = { valid: 0, invalid: 0 };
@@ -160,8 +160,8 @@ const Client = function(options) {
 
     // Check if Tracked Shares Exceeds Ban Threshold
     const totalShares = _this.shares.valid + _this.shares.invalid;
-    if (totalShares >= _this.options.banning.checkThreshold) {
-      if ((_this.shares.invalid / totalShares) < _this.options.banning.invalidPercent) {
+    if (totalShares >= _this.config.banning.checkThreshold) {
+      if ((_this.shares.invalid / totalShares) < _this.config.banning.invalidPercent) {
         this.shares = { valid: 0, invalid: 0 };
       } else {
         _this.emit('triggerBan', 'Invalid shares');
@@ -176,7 +176,7 @@ const Client = function(options) {
 
   // Manage Stratum Subscription
   this.handleSubscribe = function(message) {
-    switch (_this.options.algorithm) {
+    switch (_this.config.algorithm) {
 
     // Kawpow/Firopow Subscription
     case 'kawpow':
@@ -214,8 +214,8 @@ const Client = function(options) {
         _this.sendJson({
           id: message.id,
           result: [[
-            ['mining.set_difficulty', _this.options.subscriptionId],
-            ['mining.notify', _this.options.subscriptionId]],
+            ['mining.set_difficulty', _this.config.subscriptionId],
+            ['mining.notify', _this.config.subscriptionId]],
           extraNonce1,
           extraNonce2Size
           ],
@@ -254,7 +254,7 @@ const Client = function(options) {
     };
 
     // Check to Authorize Client
-    _this.options.authorizeFn(clientData, (result) => {
+    _this.config.authorizeFn(clientData, (result) => {
       _this.authorized = (!result.error && result.authorized);
       if (result.disconnect) {
         _this.socket.destroy();
@@ -272,7 +272,7 @@ const Client = function(options) {
   this.handleConfigure = function(message) {
 
     // No AsicBoost Support
-    if (!_this.options.asicboost) {
+    if (!_this.config.asicboost) {
       _this.sendJson({
         id: message.id,
         result: {
@@ -302,7 +302,7 @@ const Client = function(options) {
   this.handleMultiVersion = function(message) {
 
     // No AsicBoost Support
-    if (!_this.options.asicboost) {
+    if (!_this.config.asicboost) {
       _this.asicboost = false;
       _this.versionMask = '00000000';
 
@@ -374,12 +374,12 @@ const Client = function(options) {
 
     // Process Algorithm Difficulty
     let adjPow;
-    switch (_this.options.algorithm) {
+    switch (_this.config.algorithm) {
 
     // Kawpow/Firopow Difficulty
     case 'kawpow':
     case 'firopow':
-      adjPow = Algorithms[_this.options.algorithm].diff / _this.difficulty;
+      adjPow = Algorithms[_this.config.algorithm].diff / _this.difficulty;
       adjPow = '0'.repeat(64 - adjPow.toString(16).length) + adjPow.toString(16);
       _this.sendJson({
         id: null,
@@ -407,7 +407,7 @@ const Client = function(options) {
 
     // Check Processed Shares
     const activityAgo = Date.now() - _this.activity;
-    if (activityAgo > _this.options.connectionTimeout * 1000) {
+    if (activityAgo > _this.config.connectionTimeout * 1000) {
       const message = `The last submitted share was ${ activityAgo / 1000 | 0 } seconds ago`;
       _this.emit('socketTimeout', message);
       _this.socket.destroy();
@@ -423,12 +423,12 @@ const Client = function(options) {
 
     // Process Job Broadcasting
     let adjPow;
-    switch (_this.options.algorithm) {
+    switch (_this.config.algorithm) {
 
     // Kawpow/Firopow Broadcasting
     case 'kawpow':
     case 'firopow':
-      adjPow = Algorithms[_this.options.algorithm].diff / _this.difficulty;
+      adjPow = Algorithms[_this.config.algorithm].diff / _this.difficulty;
       adjPow = '0'.repeat(64 - adjPow.toString(16).length) + adjPow.toString(16);
       parameters[3] = adjPow.substr(0, 64);
       _this.sendJson({

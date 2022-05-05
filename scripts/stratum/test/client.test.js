@@ -4,8 +4,8 @@
  *
  */
 
-const events = require('events');
 const Client = require('../main/client');
+const events = require('events');
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -26,9 +26,6 @@ function mockSocket() {
 ////////////////////////////////////////////////////////////////////////////////
 
 describe('Test client functionality', () => {
-
-  beforeEach(() => {
-  });
 
   test('Test initialization of stratum client', () => {
     const socket = { socket: mockSocket() };
