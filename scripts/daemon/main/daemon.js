@@ -82,7 +82,7 @@ const Daemon = function(daemons) {
           result: dataJson.result,
           instance: instance.host,
           data: data,
-        })
+        });
       }
 
     // Data is Malformed
