@@ -5,6 +5,7 @@
  */
 
 const nock = require('nock');
+const MockDate = require('mockdate');
 const Daemon = require('../main/daemon');
 
 const daemons = [{
@@ -43,8 +44,9 @@ describe('Test daemon functionality', () => {
         result: null,
         instance: 'nocktest',
       }));
-    daemon.checkInitialized((response) => {
-      expect(response).toBe(true);
+    daemon.checkInstances((error, response) => {
+      expect(error).toBe(false);
+      expect(response).toBe(null);
       nock.cleanAll();
       done();
     });
@@ -65,21 +67,32 @@ describe('Test daemon functionality', () => {
         result: null,
         instance: 'nocktest',
       }));
-    multiDaemon.checkInitialized((response) => {
-      expect(response).toBe(true);
+    multiDaemon.checkInstances((error, response) => {
+      expect(error).toBe(false);
+      expect(response).toBe(null);
       nock.cleanAll();
       done();
     });
   });
 
   test('Test daemon initialization [3]', (done) => {
-    daemon.on('connectionFailed', () => done());
-    daemon.checkInitialized((response) => {
-      expect(response).toBe(false);
+    nock('http://127.0.0.1:8332')
+      .post('/', body => body.method === 'getpeerinfo')
+      .reply(401, JSON.stringify({
+        error: null,
+        result: null,
+        instance: 'nocktest',
+      }));
+    daemon.checkInstances((error, response) => {
+      expect(error).toBe(true);
+      expect(response).toBe("[{\"error\":true,\"result\":\"Unauthorized RPC access. Invalid RPC username or password\",\"instance\":\"127.0.0.1\",\"data\":\"{\\\"error\\\":null,\\\"result\\\":null,\\\"instance\\\":\\\"nocktest\\\"}\"}]");
+      nock.cleanAll();
+      done();
     });
   });
 
   test('Test daemon commands [1]', (done) => {
+    MockDate.set(1634742080841);
     nock('http://127.0.0.1:8332')
       .post('/', body => body.method === 'getblocktemplate')
       .reply(200, JSON.stringify({
@@ -89,137 +102,65 @@ describe('Test daemon functionality', () => {
       }));
     const requests = [['getblocktemplate', []]];
     const expected = [{'data': '{"error":null,"result":null,"instance":"nocktest"}', 'error': false, 'instance': '127.0.0.1', 'result': null}];
-    daemon.sendCommands(requests, false, (response) => {
+    daemon.sendCommands(requests, true, false, (response) => {
+      const serialized = JSON.stringify(requests);
+      const current = daemon.responses[serialized];
       expect(response).toStrictEqual(expected);
+      expect(current.time).toBe(1634742080841);
+      expect(current.result).toStrictEqual(expected);
       nock.cleanAll();
       done();
     });
   });
 
   test('Test daemon commands [2]', (done) => {
+    MockDate.set(1634742080841);
     nock('http://127.0.0.1:8332')
       .post('/', body => body.method === 'getblocktemplate')
-      .reply(401, JSON.stringify({
-        error: true,
+      .reply(200, JSON.stringify({
+        error: null,
         result: null,
         instance: 'nocktest',
       }));
     const requests = [['getblocktemplate', []]];
-    const expected = [{'data': '{"error":true,"result":null,"instance":"nocktest"}', 'error': true, 'instance': '127.0.0.1', 'result': 'Unauthorized RPC access. Invalid RPC username or password'}];
-    daemon.sendCommands(requests, false, (response) => {
+    const expected = [{'data': '{"error":null,"result":null,"instance":"nocktest"}', 'error': false, 'instance': '127.0.0.1', 'result': null}];
+    daemon.sendCommands(requests, true, false, (response) => {
+      const serialized = JSON.stringify(requests);
+      const current = daemon.responses[serialized];
       expect(response).toStrictEqual(expected);
+      expect(current.time).toBe(1634742080841);
+      expect(current.result).toStrictEqual(expected);
+      MockDate.set(1634743080841);
+      daemon.checkCache();
+      expect(Object.keys(daemon.responses).length).toBe(0);
       nock.cleanAll();
       done();
     });
   });
 
   test('Test daemon commands [3]', (done) => {
-    nock('http://127.0.0.1:8332')
-      .post('/').reply(200, JSON.stringify([
-        { id: 'nocktest', error: null, result: null },
-        { id: 'nocktest', error: null, result: null },
-      ]));
-    const requests = [['getblocktemplate', []], ['getpeerinfo', []]];
-    const expected = [[{'error': false, 'result': null, 'instance': '127.0.0.1', 'data': '{"id":"nocktest","error":null,"result":null}'},{'error': false, 'result': null, 'instance': '127.0.0.1', 'data': '{"id":"nocktest","error":null,"result":null}'}]];
-    daemon.sendCommands(requests, false, (response) => {
-      expect(response).toStrictEqual(expected);
-      nock.cleanAll();
-      done();
-    });
-  });
-
-  test('Test daemon commands [4]', (done) => {
-    nock('http://127.0.0.1:8332')
-      .post('/').reply(200, JSON.stringify([
-        { id: 'nocktest', error: null, result: null },
-        { id: 'nocktest', error: null, result: null },
-      ]));
-    nock('http://127.0.0.2:8332')
-      .post('/').reply(200, JSON.stringify([
-        { id: 'nocktest', error: null, result: null },
-        { id: 'nocktest', error: null, result: null },
-      ]));
-    const requests = [['getblocktemplate', []], ['getpeerinfo', []]];
-    const expected = [
-      [{'error': false, 'result': null, 'instance': '127.0.0.1', 'data': '{"id":"nocktest","error":null,"result":null}'},{'error': false, 'result': null, 'instance': '127.0.0.1', 'data': '{"id":"nocktest","error":null,"result":null}'}],
-      [{'error': false, 'result': null, 'instance': '127.0.0.2', 'data': '{"id":"nocktest","error":null,"result":null}'},{'error': false, 'result': null, 'instance': '127.0.0.2', 'data': '{"id":"nocktest","error":null,"result":null}'}]];
-    multiDaemon.sendCommands(requests, false, (response) => {
-      expect(response).toStrictEqual(expected);
-      nock.cleanAll();
-      done();
-    });
-  });
-
-  test('Test daemon commands [5]', (done) => {
-    nock('http://127.0.0.1:8332')
-      .post('/').reply(200, JSON.stringify([
-        { id: 'nocktest', error: null, result: null },
-        { id: 'nocktest', error: null, result: null },
-      ]));
-    const requests = [['getblocktemplate', []], ['getpeerinfo', []]];
-    const expected = [{'error': false, 'result': null, 'instance': '127.0.0.1', 'data': '{"id":"nocktest","error":null,"result":null}'},{'error': false, 'result': null, 'instance': '127.0.0.1', 'data': '{"id":"nocktest","error":null,"result":null}'}];
-    daemon.sendCommands(requests, true, (response) => {
-      expect(response).toStrictEqual(expected);
-      nock.cleanAll();
-      done();
-    });
-  });
-
-  test('Test daemon commands [6]', (done) => {
-    nock('http://127.0.0.1:8332')
-      .post('/').reply(200, JSON.stringify([
-        { id: 'nocktest', error: null, result: null },
-        { id: 'nocktest', error: null, result: null },
-      ]));
-    const requests = [['getblocktemplate', []], ['getpeerinfo', []]];
-    const expected = [{'error': false, 'result': null, 'instance': '127.0.0.1', 'data': '{"id":"nocktest","error":null,"result":null}'},{'error': false, 'result': null, 'instance': '127.0.0.1', 'data': '{"id":"nocktest","error":null,"result":null}'}];
-    multiDaemon.sendCommands(requests, true, (response) => {
-      expect(response).toStrictEqual(expected);
-      nock.cleanAll();
-      done();
-    });
-  });
-
-  test('Test daemon commands [7]', (done) => {
-    const expected = {'data': null, 'error': true, 'instance': null, 'result': 'No commands passed to daemon'};
-    daemon.sendCommands([], false, (response) => {
-      expect(response).toStrictEqual(expected);
-      nock.cleanAll();
-      done();
-    });
-  });
-
-  test('Test daemon commands [8]', (done) => {
+    MockDate.set(1634742080841);
     nock('http://127.0.0.1:8332')
       .post('/', body => body.method === 'getblocktemplate')
-      .reply(200, null);
+      .reply(200, JSON.stringify({
+        error: null,
+        result: null,
+        instance: 'nocktest',
+      }));
     const requests = [['getblocktemplate', []]];
-    const expected = [{'data': 'null', 'error': true, 'instance': '127.0.0.1', 'result': 'Could not parse RPC data from daemon response' }];
-    daemon.sendCommands(requests, false, (response) => {
-      expect(response).toStrictEqual(expected);
-      nock.cleanAll();
-      done();
-    });
-  });
-
-  test('Test daemon commands [9]', (done) => {
-    nock('http://127.0.0.1:8332')
-      .post('/', body => body.method === 'getblocktemplate')
-      .reply(200, 'blajahahge');
-    const requests = [['getblocktemplate', []]];
-    const expected = [{'data': 'blajahahge', 'error': true, 'instance': '127.0.0.1', 'result': 'Could not parse RPC data from daemon response' }];
-    daemon.sendCommands(requests, false, (response) => {
-      expect(response).toStrictEqual(expected);
-      nock.cleanAll();
-      done();
-    });
-  });
-
-  test('Test daemon commands [10]', (done) => {
-    const requests = [['getblocktemplate', []]];
-    const expected = {'data': null, 'error': true, 'instance': '127.0.0.1', 'result': 'connect ECONNREFUSED 127.0.0.1:8332'};
-    daemon.sendCommands(requests, true, (response) => {
-      expect(response).toStrictEqual(expected);
+    const expected = [{'data': '{"error":null,"result":null,"instance":"nocktest"}', 'error': false, 'instance': '127.0.0.1', 'result': null}];
+    daemon.sendCommands(requests, true, false, (response1) => {
+      const serialized = JSON.stringify(requests);
+      const current1 = daemon.responses[serialized];
+      expect(response1).toStrictEqual(expected);
+      expect(current1.time).toBe(1634742080841);
+      expect(current1.result).toStrictEqual(expected);
+      daemon.sendCommands(requests, true, false, (response2) => {
+        const current2 = daemon.responses[serialized];
+        expect(response2).toStrictEqual(expected);
+        expect(current2.time).toBe(1634742080841);
+        expect(current2.result).toStrictEqual(expected);
+      });
       nock.cleanAll();
       done();
     });

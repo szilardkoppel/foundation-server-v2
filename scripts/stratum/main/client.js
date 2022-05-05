@@ -9,13 +9,6 @@ const events = require('events');
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/**
- * Defining each client that connects to the stratum server.
- * Emits:
- *  - subscription(obj, cback(error, extraNonce1, extraNonce2Size))
- *  - submit(data(name, jobID, extraNonce2, ntime, nonce))
-**/
-
 // Main Client Function
 const Client = function(options) {
 
