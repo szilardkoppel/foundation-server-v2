@@ -10,16 +10,19 @@ const events = require('events');
 ////////////////////////////////////////////////////////////////////////////////
 
 // Main Daemon Function
-const Daemon = function(daemons) {
+const Daemon = function(config, daemons) {
 
   const _this = this;
-  this.responses = {};
+  this.config = config;
   this.daemons = daemons;
+
+  // Daemon Variables
+  this.responses = {};
   this.interface = null;
 
   // Clear Response Cache
   this.checkCache = function() {
-    const cacheTime = Date.now() - 5000;
+    const cacheTime = Date.now() - (_this.config.settings.cacheRemovalInterval || 5000);
     Object.keys(_this.responses).forEach((key) => {
       if (_this.responses[key].time < cacheTime) delete _this.responses[key];
     });
@@ -37,7 +40,7 @@ const Daemon = function(daemons) {
   this.sendCommands = function(requests, cacheable, streaming, callback) {
 
     // Cache Variables
-    const cacheTime = Date.now() - 1000;
+    const cacheTime = Date.now() - (_this.config.settings.cacheInterval || 1000);
     const serialized = JSON.stringify(requests);
 
     // Response Cached <= 1s ago

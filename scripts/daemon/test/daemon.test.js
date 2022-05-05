@@ -8,6 +8,13 @@ const nock = require('nock');
 const MockDate = require('mockdate');
 const Daemon = require('../main/daemon');
 
+const config = {
+  'settings': {
+    'cacheInterval': 1000,
+    'cacheRemovalInterval': 5000,
+  }
+}
+
 const daemons = [{
   'host': '127.0.0.1',
   'port': '8332',
@@ -29,8 +36,8 @@ const multiDaemons = [{
 
 nock.disableNetConnect();
 nock.enableNetConnect('127.0.0.1');
-const daemon = new Daemon(daemons);
-const multiDaemon = new Daemon(multiDaemons);
+const daemon = new Daemon(config, daemons);
+const multiDaemon = new Daemon(config, multiDaemons);
 
 ////////////////////////////////////////////////////////////////////////////////
 
