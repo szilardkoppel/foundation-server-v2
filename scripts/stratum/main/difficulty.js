@@ -24,6 +24,33 @@ const Difficulty = function(config) {
   this.lastRetargetTime = null;
   this.lastSavedTime = null;
 
+  // Check Difficulty for Updates
+  this.checkDifficulty = function(client) {
+
+    // Calculate Average/Difference
+    let output = null;
+    const curAverage = _this.queue.reduce((a, b) => a + b, 0) / _this.queue.length;
+    let curDifference = _this.config.targetTime / curAverage;
+
+    // Shift Difficulty Down
+    if (curAverage > _this.maxTime && client.difficulty > _this.config.minimum) {
+      if (curDifference * client.difficulty < _this.config.minimum) {
+        curDifference = _this.config.minimum / client.difficulty;
+      }
+      output = curDifference;
+
+    // Shift Difficulty Up
+    } else if (curAverage < _this.minTime && client.difficulty < _this.config.maximum) {
+      if (curDifference * client.difficulty > _this.config.maximum) {
+        curDifference = _this.config.maximum / client.difficulty;
+      }
+      output = curDifference;
+    }
+
+    // Return Updated Difference
+    return output;
+  };
+
   // Handle Difficulty Updates
   this.handleDifficulty = function(client) {
 
@@ -42,31 +69,17 @@ const Difficulty = function(config) {
 
     // Calculate Difference Between Desired vs. Average Time
     if (curTime - _this.lastRetargetTime < _this.config.retargetTime) return;
-    const curAverage = _this.queue.reduce((a, b) => a + b, 0) / _this.queue.length;
-    let curDifference = _this.config.targetTime / curAverage;
-    _this.lastRetargetTime = curTime;
+    const updatedDifficulty = this.checkDifficulty(client);
 
-    // Shift Difficulty Down
-    if (curAverage > _this.maxTime && client.difficulty > _this.config.minimum) {
-      if (curDifference * client.difficulty < _this.config.minimum) {
-        curDifference = _this.config.minimum / client.difficulty;
-      }
-
-    // Shift Difficulty Up
-    } else if (curAverage < _this.minTime && client.difficulty < _this.config.maximum) {
-      if (curDifference * client.difficulty > _this.config.maximum) {
-        curDifference = _this.config.maximum / client.difficulty;
-      }
-
-    // No Difficulty Update Required
-    } else {
-      return;
+    // Difficulty Will Be Updated
+    if (updatedDifficulty !== null) {
+      _this.queue = [];
+      const newDifference = parseFloat((client.difficulty * updatedDifficulty).toFixed(8));
+      _this.emit('newDifficulty', client, newDifference);
     }
 
-    // Send New Difficulty to Client
-    _this.queue = [];
-    const newDifference = parseFloat((client.difficulty * curDifference).toFixed(8));
-    _this.emit('newDifficulty', client, newDifference);
+    // Update Retarget Time
+    _this.lastRetargetTime = curTime;
   };
 
   // Handle Individual Clients
