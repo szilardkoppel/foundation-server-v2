@@ -1,6 +1,6 @@
 /*
  *
- * Stratum (Updated)
+ * Client (Updated)
  *
  */
 
@@ -21,22 +21,6 @@ function mockSocket() {
     socket.emit('log', data);
   };
   return socket;
-}
-
-function mockClient() {
-  const socket = mockSocket();
-  const client = new events.EventEmitter();
-  client.previousDifficulty = 0;
-  client.difficulty = 1,
-  client.extraNonce1 = 0,
-  client.socket = socket;
-  client.socket.localPort = 3001;
-  client.getLabel = () => {
-    return 'client [example]';
-  };
-  client.sendDifficulty = () => {};
-  client.sendMiningJob = () => {};
-  return client;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -74,8 +58,8 @@ describe('Test client functionality', () => {
     const client = new Client(socket);
     client.setupClient();
     client.on('socketError', (error) => {
-      expect(error).toBe('test')
-      done()
+      expect(error).toBe('test');
+      done();
     });
     client.socket.emit('error', 'test');
   });
@@ -84,7 +68,7 @@ describe('Test client functionality', () => {
     const socket = { socket: mockSocket() };
     const client = new Client(socket);
     client.setupClient();
-    client.socket.on('log', text => done());
+    client.socket.on('log', () => done());
     client.socket.emit('data', '{"method":"mining.extranonce.subscribe"}\n');
   });
 
@@ -92,8 +76,8 @@ describe('Test client functionality', () => {
     const socket = { socket: mockSocket() };
     const client = new Client(socket);
     client.setupClient();
-    client.socket.on('log', text => {
-      expect(text).toStrictEqual("destroyed");
+    client.socket.on('log', (text) => {
+      expect(text).toStrictEqual('destroyed');
       done();
     });
     client.socket.emit('data', 'bad\n');
@@ -103,7 +87,7 @@ describe('Test client functionality', () => {
     const socket = { socket: mockSocket() };
     const client = new Client(socket);
     client.setupClient();
-    client.socket.on('log', (text) => done());
+    client.socket.on('log', () => done());
     client.socket.emit('data', '{"method":"mining.extranonce.subscribe"}\n{"method":"min');
   });
 
@@ -118,8 +102,8 @@ describe('Test client functionality', () => {
     const socket = { socket: mockSocket() };
     const client = new Client(socket);
     client.setupClient();
-    client.socket.on('log', text => {
-      expect(text).toStrictEqual("destroyed");
+    client.socket.on('log', (text) => {
+      expect(text).toStrictEqual('destroyed');
       done();
     });
     client.socket.emit('data', 'test'.repeat(10000));
@@ -128,7 +112,7 @@ describe('Test client functionality', () => {
   test('Test client socket writing', (done) => {
     const socket = { socket: mockSocket() };
     const client = new Client(socket);
-    client.socket.on('log', text => done());
+    client.socket.on('log', () => done());
     client.sendJson({ id: 'test' });
   });
 
@@ -136,15 +120,15 @@ describe('Test client functionality', () => {
     const socket = { socket: mockSocket() };
     const client = new Client(socket);
     const label = client.sendLabel();
-    expect(label).toBe('(unauthorized) [127.0.0.1]')
+    expect(label).toBe('(unauthorized) [127.0.0.1]');
   });
 
   test('Test client label writing [2]', () => {
     const socket = { socket: mockSocket() };
     const client = new Client(socket);
-    client.addrPrimary = 'test'
+    client.addrPrimary = 'test';
     const label = client.sendLabel();
-    expect(label).toBe('test [127.0.0.1]')
+    expect(label).toBe('test [127.0.0.1]');
   });
 
   test('Test client difficulty queueing [1]', () => {
@@ -207,8 +191,8 @@ describe('Test client functionality', () => {
   test('Test client message validation [1]', (done) => {
     const socket = { socket: mockSocket() };
     const client = new Client(socket);
-    client.socket.on('log', text => {
-      expect(text).toStrictEqual("null\n[[[\"mining.set_difficulty\",null],[\"mining.notify\",null]],\"extraNonce1\",\"extraNonce2Size\"]\nnull\n");
+    client.socket.on('log', (text) => {
+      expect(text).toStrictEqual('null\n[[["mining.set_difficulty",null],["mining.notify",null]],"extraNonce1","extraNonce2Size"]\nnull\n');
       done();
     });
     client.on('subscription', (params, callback) => callback(null, 'extraNonce1', 'extraNonce2Size'));
@@ -218,8 +202,8 @@ describe('Test client functionality', () => {
   test('Test client message validation [2]', (done) => {
     const socket = { socket: mockSocket() };
     const client = new Client(socket);
-    client.socket.on('log', text => {
-      expect(text).toStrictEqual("null\nnull\ntrue\n");
+    client.socket.on('log', (text) => {
+      expect(text).toStrictEqual('null\nnull\ntrue\n');
       done();
     });
     client.on('subscription', (params, callback) => callback(true, null, null));
@@ -229,8 +213,8 @@ describe('Test client functionality', () => {
   test('Test client message validation [3]', (done) => {
     const socket = { socket: mockSocket(), algorithm: 'kawpow' };
     const client = new Client(socket);
-    client.socket.on('log', text => {
-      expect(text).toStrictEqual("null\n[null,\"extraNonce1\"]\nnull\n");
+    client.socket.on('log', (text) => {
+      expect(text).toStrictEqual('null\n[null,"extraNonce1"]\nnull\n');
       done();
     });
     client.on('subscription', (params, callback) => callback(null, 'extraNonce1', 'extraNonce1'));
@@ -240,8 +224,8 @@ describe('Test client functionality', () => {
   test('Test client message validation [4]', (done) => {
     const socket = { socket: mockSocket(), algorithm: 'kawpow' };
     const client = new Client(socket);
-    client.socket.on('log', text => {
-      expect(text).toStrictEqual("null\nnull\ntrue\n");
+    client.socket.on('log', (text) => {
+      expect(text).toStrictEqual('null\nnull\ntrue\n');
       done();
     });
     client.on('subscription', (params, callback) => callback(true, null, null));
@@ -250,10 +234,10 @@ describe('Test client functionality', () => {
 
   test('Test client message validation [5]', (done) => {
     const output = { error: null, authorized: true, disconnect: false };
-    const socket = { socket: mockSocket(), authorizeFn: ({}, callback) => callback(output) };
+    const socket = { socket: mockSocket(), authorizeFn: (data, callback) => callback(output) };
     const client = new Client(socket);
-    client.socket.on('log', text => {
-      expect(text).toStrictEqual("null\ntrue\nnull\n");
+    client.socket.on('log', (text) => {
+      expect(text).toStrictEqual('null\ntrue\nnull\n');
       done();
     });
     client.validateMessages({ id: null, method: 'mining.authorize', params: ['username', 'password'] });
@@ -261,10 +245,10 @@ describe('Test client functionality', () => {
 
   test('Test client message validation [6]', (done) => {
     const output = { error: null, authorized: false, disconnect: true };
-    const socket = { socket: mockSocket(), authorizeFn: ({}, callback) => callback(output) };
+    const socket = { socket: mockSocket(), authorizeFn: (data, callback) => callback(output) };
     const client = new Client(socket);
-    client.socket.on('log', text => {
-      expect(text).toStrictEqual("destroyed");
+    client.socket.on('log', (text) => {
+      expect(text).toStrictEqual('destroyed');
       done();
     });
     client.validateMessages({ id: null, method: 'mining.authorize', params: ['username', 'password'] });
@@ -272,12 +256,12 @@ describe('Test client functionality', () => {
 
   test('Test client message validation [7]', (done) => {
     const output = { error: null, authorized: true, disconnect: false };
-    const socket = { socket: mockSocket(), authorizeFn: ({}, callback) => callback(output) };
+    const socket = { socket: mockSocket(), authorizeFn: (data, callback) => callback(output) };
     const client = new Client(socket);
-    client.socket.on('log', text => {
+    client.socket.on('log', (text) => {
       expect(client.pendingDifficulty).toBe(500);
       expect(client.staticDifficulty).toBe(true);
-      expect(text).toStrictEqual("null\ntrue\nnull\n");
+      expect(text).toStrictEqual('null\ntrue\nnull\n');
       done();
     });
     client.validateMessages({ id: null, method: 'mining.authorize', params: ['username', 'd=500'] });
@@ -286,8 +270,8 @@ describe('Test client functionality', () => {
   test('Test client message validation [8]', (done) => {
     const socket = { socket: mockSocket() };
     const client = new Client(socket);
-    client.socket.on('log', text => {
-      expect(text).toStrictEqual("null\n{\"version-rolling\":false}\nnull\n");
+    client.socket.on('log', (text) => {
+      expect(text).toStrictEqual('null\n{"version-rolling":false}\nnull\n');
       done();
     });
     client.validateMessages({ id: null, method: 'mining.configure' });
@@ -298,8 +282,8 @@ describe('Test client functionality', () => {
   test('Test client message validation [9]', (done) => {
     const socket = { socket: mockSocket(), asicboost: true };
     const client = new Client(socket);
-    client.socket.on('log', text => {
-      expect(text).toStrictEqual("null\n{\"version-rolling\":true,\"version-rolling.mask\":\"1fffe000\"}\nnull\n");
+    client.socket.on('log', (text) => {
+      expect(text).toStrictEqual('null\n{"version-rolling":true,"version-rolling.mask":"1fffe000"}\nnull\n');
       done();
     });
     client.validateMessages({ id: null, method: 'mining.configure' });
@@ -334,8 +318,8 @@ describe('Test client functionality', () => {
   test('Test client message validation [13]', (done) => {
     const socket = { socket: mockSocket(), banning: { checkThreshold: 500 }};
     const client = new Client(socket);
-    client.socket.on('log', text => {
-      expect(text).toStrictEqual("null\nnull\n[24,\"unauthorized worker\",null]\n");
+    client.socket.on('log', (text) => {
+      expect(text).toStrictEqual('null\nnull\n[24,"unauthorized worker",null]\n');
       done();
     });
     client.validateMessages({ id: null, method: 'mining.submit', params: ['worker', 'password'] });
@@ -346,8 +330,8 @@ describe('Test client functionality', () => {
     const socket = { socket: mockSocket(), banning: { checkThreshold: 500 }};
     const client = new Client(socket);
     client.authorized = true;
-    client.socket.on('log', text => {
-      expect(text).toStrictEqual("null\nnull\n[25,\"not subscribed\",null]\n");
+    client.socket.on('log', (text) => {
+      expect(text).toStrictEqual('null\nnull\n[25,"not subscribed",null]\n');
       done();
     });
     client.validateMessages({ id: null, method: 'mining.submit', params: ['worker', 'password'] });
@@ -359,8 +343,8 @@ describe('Test client functionality', () => {
     const client = new Client(socket);
     client.authorized = true;
     client.extraNonce1 = 'test';
-    client.socket.on('log', text => {
-      expect(text).toStrictEqual("null\ntrue\nnull\n");
+    client.socket.on('log', (text) => {
+      expect(text).toStrictEqual('null\ntrue\nnull\n');
       done();
     });
     client.on('submit', (params, callback) => callback(null, true));
@@ -375,8 +359,8 @@ describe('Test client functionality', () => {
     client.addrPrimary = 'worker';
     client.authorized = true;
     client.extraNonce1 = 'test';
-    client.socket.on('log', text => {
-      expect(text).toStrictEqual("null\ntrue\nnull\n");
+    client.socket.on('log', (text) => {
+      expect(text).toStrictEqual('null\ntrue\nnull\n');
       done();
     });
     client.on('submit', (params, callback) => callback(null, true));
@@ -390,8 +374,8 @@ describe('Test client functionality', () => {
     client.authorized = true;
     client.extraNonce1 = 'test';
     client.shares = { valid: 0, invalid: 20 };
-    client.socket.on('log', text => {
-      expect(text).toStrictEqual("destroyed");
+    client.socket.on('log', (text) => {
+      expect(text).toStrictEqual('destroyed');
       done();
     });
     client.on('submit', (params, callback) => callback(true, null));
@@ -404,8 +388,8 @@ describe('Test client functionality', () => {
     client.authorized = true;
     client.extraNonce1 = 'test';
     client.shares = { valid: 20, invalid: 0 };
-    client.socket.on('log', text => {
-      expect(text).toStrictEqual("null\ntrue\nnull\n");
+    client.socket.on('log', (text) => {
+      expect(text).toStrictEqual('null\ntrue\nnull\n');
       done();
     });
     client.on('submit', (params, callback) => callback(null, true));
@@ -416,8 +400,8 @@ describe('Test client functionality', () => {
   test('Test client message validation [19]', (done) => {
     const socket = { socket: mockSocket() };
     const client = new Client(socket);
-    client.socket.on('log', text => {
-      expect(text).toStrictEqual("null\n[]\n[20,\"Not supported.\",null]\n");
+    client.socket.on('log', (text) => {
+      expect(text).toStrictEqual('null\n[]\n[20,"Not supported.",null]\n');
       done();
     });
     client.validateMessages({ id: null, method: 'mining.get_transactions' });
@@ -426,8 +410,8 @@ describe('Test client functionality', () => {
   test('Test client message validation [20]', (done) => {
     const socket = { socket: mockSocket() };
     const client = new Client(socket);
-    client.socket.on('log', text => {
-      expect(text).toStrictEqual("null\nfalse\n[20,\"Not supported.\",null]\n");
+    client.socket.on('log', (text) => {
+      expect(text).toStrictEqual('null\nfalse\n[20,"Not supported.",null]\n');
       done();
     });
     client.validateMessages({ id: null, method: 'mining.extranonce.subscribe' });
@@ -443,8 +427,8 @@ describe('Test client functionality', () => {
   test('Test client difficulty updates [1]', (done) => {
     const socket = { socket: mockSocket() };
     const client = new Client(socket);
-    client.socket.on('log', text => {
-      expect(text).toStrictEqual("null\n\"mining.set_difficulty\"\n[8]\n");
+    client.socket.on('log', (text) => {
+      expect(text).toStrictEqual('null\n"mining.set_difficulty"\n[8]\n');
       done();
     });
     expect(client.broadcastDifficulty(0)).toBe(false);
@@ -454,8 +438,8 @@ describe('Test client functionality', () => {
   test('Test client difficulty updates [2]', (done) => {
     const socket = { socket: mockSocket(), algorithm: 'kawpow' };
     const client = new Client(socket);
-    client.socket.on('log', text => {
-      expect(text).toStrictEqual("null\n\"mining.set_target\"\n[\"000000001fe00000000000000000000000000000000000000000000000000000\"]\n");
+    client.socket.on('log', (text) => {
+      expect(text).toStrictEqual('null\n"mining.set_target"\n["000000001fe00000000000000000000000000000000000000000000000000000"]\n');
       done();
     });
     expect(client.broadcastDifficulty(0)).toBe(false);
@@ -465,8 +449,8 @@ describe('Test client functionality', () => {
   test('Test client job updates [1]', (done) => {
     const socket = { socket: mockSocket() };
     const client = new Client(socket);
-    client.socket.on('log', text => {
-      expect(text).toStrictEqual("null\n\"mining.notify\"\n[0,0,0,0]\n");
+    client.socket.on('log', (text) => {
+      expect(text).toStrictEqual('null\n"mining.notify"\n[0,0,0,0]\n');
       done();
     });
     client.broadcastMiningJob([0,0,0,0]);
@@ -476,8 +460,8 @@ describe('Test client functionality', () => {
     const socket = { socket: mockSocket(), connectionTimeout: 10 };
     const client = new Client(socket);
     client.activity = 0;
-    client.socket.on('log', text => {
-      expect(text).toStrictEqual("destroyed");
+    client.socket.on('log', (text) => {
+      expect(text).toStrictEqual('destroyed');
       done();
     });
     client.broadcastMiningJob([0,0,0,0]);
@@ -488,11 +472,11 @@ describe('Test client functionality', () => {
     const socket = { socket: mockSocket() };
     const client = new Client(socket);
     client.pendingDifficulty = 8;
-    client.socket.on('log', text => {
+    client.socket.on('log', (text) => {
       response.push(text);
       if (response.length === 2) {
-        expect(response[0]).toStrictEqual("null\n\"mining.set_difficulty\"\n[8]\n");
-        expect(response[1]).toStrictEqual("null\n\"mining.notify\"\n[0,0,0,0]\n");
+        expect(response[0]).toStrictEqual('null\n"mining.set_difficulty"\n[8]\n');
+        expect(response[1]).toStrictEqual('null\n"mining.notify"\n[0,0,0,0]\n');
         done();
       }
     });
@@ -500,12 +484,11 @@ describe('Test client functionality', () => {
   });
 
   test('Test client job updates [4]', (done) => {
-    const response = [];
     const socket = { socket: mockSocket() };
     const client = new Client(socket);
     client.pendingDifficulty = 0;
-    client.socket.on('log', text => {
-      expect(text).toStrictEqual("null\n\"mining.notify\"\n[0,0,0,0]\n");
+    client.socket.on('log', (text) => {
+      expect(text).toStrictEqual('null\n"mining.notify"\n[0,0,0,0]\n');
       done();
     });
     client.broadcastMiningJob([0,0,0,0]);
@@ -515,8 +498,8 @@ describe('Test client functionality', () => {
     const socket = { socket: mockSocket(), algorithm: 'kawpow' };
     const client = new Client(socket);
     client.difficulty = 16;
-    client.socket.on('log', text => {
-      expect(text).toStrictEqual("null\n\"mining.notify\"\n[0,0,0,\"000000000ff00000000000000000000000000000000000000000000000000000\"]\n");
+    client.socket.on('log', (text) => {
+      expect(text).toStrictEqual('null\n"mining.notify"\n[0,0,0,"000000000ff00000000000000000000000000000000000000000000000000000"]\n');
       done();
     });
     client.broadcastMiningJob([0,0,0,0]);

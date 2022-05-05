@@ -27,7 +27,7 @@ const Client = function(options) {
   // Client Variables
   this.activity = Date.now();
   this.difficulty = 0;
-  this.messages = "";
+  this.messages = '';
   this.shares = { valid: 0, invalid: 0 };
 
   // Difficulty Variables
@@ -127,7 +127,7 @@ const Client = function(options) {
       _this.emit('unknownStratumMethod', message);
       break;
     }
-  }
+  };
 
   // Validate Socket Data
   this.validateData = function(data) {
@@ -156,7 +156,7 @@ const Client = function(options) {
       });
       _this.messages = incomplete;
     }
-  }
+  };
 
   // Check for Banning Users
   this.considerBan = function(shareValid) {
@@ -223,8 +223,8 @@ const Client = function(options) {
           result: [[
             ['mining.set_difficulty', _this.options.subscriptionId],
             ['mining.notify', _this.options.subscriptionId]],
-            extraNonce1,
-            extraNonce2Size
+          extraNonce1,
+          extraNonce2Size
           ],
           error: null
         });
@@ -258,7 +258,7 @@ const Client = function(options) {
       addrPrimary: _this.addrPrimary,
       addrAuxiliary: _this.addrAuxiliary,
       password: _this.clientPassword,
-    }
+    };
 
     // Check to Authorize Client
     _this.options.authorizeFn(clientData, (result) => {
@@ -454,7 +454,7 @@ const Client = function(options) {
       });
       break;
     }
-  }
+  };
 
   // Establish Stratum Connection
   this.setupClient = function() {
@@ -467,7 +467,7 @@ const Client = function(options) {
     _this.socket.on('data', (data) => _this.validateData(data));
     _this.socket.on('error', (error) => _this.emit('socketError', error));
     _this.socket.on('close', () => _this.emit('socketDisconnect'));
-  }
+  };
 };
 
 module.exports = Client;

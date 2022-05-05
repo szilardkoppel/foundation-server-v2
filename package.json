@@ -41,12 +41,14 @@
     "url": "https://github.com/blinkhash/foundation-server-v2.git"
   },
   "dependencies": {
+    "async": "^3.2.3",
     "foundation-multi-hashing": "0.1.1"
   },
   "devDependencies": {
     "codecov": "^3.8.1",
     "eslint": "^7.23.0",
-    "jest": "^26.6.3"
+    "jest": "^26.6.3",
+    "nock": "^13.2.4"
   },
   "engines": {
     "node": ">=12.16"
