@@ -164,8 +164,8 @@ const Client = function(config) {
       if ((_this.shares.invalid / totalShares) < _this.config.banning.invalidPercent) {
         this.shares = { valid: 0, invalid: 0 };
       } else {
-        _this.emit('triggerBan', 'Invalid shares');
         _this.socket.destroy();
+        _this.emit('triggerBan');
         return true;
       }
     }

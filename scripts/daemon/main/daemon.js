@@ -22,7 +22,7 @@ const Daemon = function(config, daemons) {
 
   // Clear Response Cache
   this.checkCache = function() {
-    const cacheTime = Date.now() - (_this.config.settings.cacheRemovalInterval || 5000);
+    const cacheTime = Date.now() - _this.config.settings.cacheRemovalInterval;
     Object.keys(_this.responses).forEach((key) => {
       if (_this.responses[key].time < cacheTime) delete _this.responses[key];
     });
@@ -40,7 +40,7 @@ const Daemon = function(config, daemons) {
   this.sendCommands = function(requests, cacheable, streaming, callback) {
 
     // Cache Variables
-    const cacheTime = Date.now() - (_this.config.settings.cacheInterval || 1000);
+    const cacheTime = Date.now() - _this.config.settings.cacheInterval;
     const serialized = JSON.stringify(requests);
 
     // Response Cached <= 1s ago

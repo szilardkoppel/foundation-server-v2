@@ -31,34 +31,6 @@ const Template = function(config, rpcData, jobId, placeholder, auxMerkle) {
     throw new Error('Merged mining is not supported with coins that pass an extra coinbase payload.');
   }
 
-  // Determine Block Hash Function
-  this.blockHasher = function() {
-    const algorithm = _this.config.primary.coin.algorithms.block;
-    const hashDigest = Algorithms[algorithm].hash(_this.config.primary.coin);
-    return function () {
-      return utils.reverseBuffer(hashDigest.apply(this, arguments));
-    };
-  }();
-
-  // Determine Coinbase Hash Function
-  this.coinbaseHasher = function() {
-    const algorithm = _this.config.primary.coin.algorithms.coinbase;
-    const hashDigest = Algorithms[algorithm].hash(_this.config.primary.coin);
-    return function () {
-      return hashDigest.apply(this, arguments);
-    };
-  }();
-
-  // Check Previous Submissions for Duplicates
-  this.checkSubmissions = function(header) {
-    const submission = header.join('').toLowerCase();
-    if (_this.submissions.indexOf(submission) === -1) {
-      _this.submissions.push(submission);
-      return true;
-    }
-    return false;
-  };
-
   // Template Variables
   this.merkle = new Merkle(utils.convertHashToBuffer(_this.rpcData.transactions));
   this.generation = new Transactions().default(_this.config, _this.rpcData, placeholder, auxMerkle);
@@ -66,7 +38,7 @@ const Template = function(config, rpcData, jobId, placeholder, auxMerkle) {
   this.transactions = Buffer.concat(_this.rpcData.transactions.map((tx) => Buffer.from(tx.data, 'hex')));
 
   // Serialize Block Headers
-  this.serializeHeader = function(merkleRoot, nTime, nonce, version) {
+  this.handleHeader = function(merkleRoot, nTime, nonce, version) {
     let header = Buffer.alloc(80);
     let position = 0;
     switch (algorithm) {
@@ -97,8 +69,17 @@ const Template = function(config, rpcData, jobId, placeholder, auxMerkle) {
     return header;
   };
 
+  // Determine Coinbase Hash Function
+  this.hashCoinbase = function() {
+    const algorithm = _this.config.primary.coin.algorithms.coinbase;
+    const hashDigest = Algorithms[algorithm].hash(_this.config.primary.coin);
+    return function () {
+      return hashDigest.apply(this, arguments);
+    };
+  }();
+
   // Serialize Block Coinbase
-  this.serializeCoinbase = function(extraNonce1, extraNonce2) {
+  this.handleCoinbase = function(extraNonce1, extraNonce2) {
     let buffer;
     switch (algorithm) {
 
@@ -125,8 +106,17 @@ const Template = function(config, rpcData, jobId, placeholder, auxMerkle) {
     return buffer;
   };
 
+  // Determine Block Hash Function
+  this.hashBlocks = function() {
+    const algorithm = _this.config.primary.coin.algorithms.block;
+    const hashDigest = Algorithms[algorithm].hash(_this.config.primary.coin);
+    return function () {
+      return utils.reverseBuffer(hashDigest.apply(this, arguments));
+    };
+  }();
+
   // Serialize Entire Block
-  this.serializeBlock = function(header, coinbase, nonce, mixHash) {
+  this.handleBlocks = function(header, coinbase, nonce, mixHash) {
     let buffer, votes;
 
     // Handle Block Voting
@@ -169,8 +159,18 @@ const Template = function(config, rpcData, jobId, placeholder, auxMerkle) {
     return buffer;
   };
 
+  // Check Previous Submissions for Duplicates
+  this.handleSubmissions = function(header) {
+    const submission = header.join('').toLowerCase();
+    if (_this.submissions.indexOf(submission) === -1) {
+      _this.submissions.push(submission);
+      return true;
+    }
+    return false;
+  };
+
   // Generate Job Parameters for Clients
-  this.getJobParams = function(client, cleanJobs) {
+  this.handleParameters = function(client, cleanJobs) {
 
     // Establish Parameter Variables
     let adjPow, epochLength, extraNonce1Buffer;
@@ -196,15 +196,15 @@ const Template = function(config, rpcData, jobId, placeholder, auxMerkle) {
       extraNonce1Buffer = Buffer.from(client.extraNonce1, 'hex');
 
       // Generate Coinbase Buffer
-      coinbaseBuffer = _this.serializeCoinbase(extraNonce1Buffer);
-      coinbaseHash = _this.coinbaseHasher(coinbaseBuffer);
+      coinbaseBuffer = _this.handleCoinbase(extraNonce1Buffer);
+      coinbaseHash = _this.hashCoinbase(coinbaseBuffer);
       merkleRoot = _this.merkle.withFirst(coinbaseHash);
 
       // Generate Block Header Hash
       version = _this.rpcData.version;
       nTime = utils.packUInt32BE(_this.rpcData.curtime).toString('hex');
       target = adjPow.substr(0, 64);
-      header = _this.serializeHeader(merkleRoot, nTime, 0, version);
+      header = _this.handleHeader(merkleRoot, nTime, 0, version);
       headerBuffer = utils.reverseBuffer(utils.sha256d(header));
 
       // Generate Seed Hash Buffer

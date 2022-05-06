@@ -189,29 +189,4 @@ describe('Test daemon functionality', () => {
       });
     });
   });
-
-  test('Test daemon commands [4]', (done) => {
-    MockDate.set(1634742080841);
-    nock('http://127.0.0.1:8332')
-      .post('/', body => body.method === 'getblocktemplate')
-      .reply(200, JSON.stringify({
-        error: null,
-        result: null,
-        instance: 'nocktest',
-      }));
-    const daemon = new Daemon({ settings: {} }, daemonsCopy);
-    const requests = [['getblocktemplate', []]];
-    const expected = [{'data': '{"error":null,"result":null,"instance":"nocktest"}', 'error': false, 'instance': '127.0.0.1', 'result': null}];
-    daemon.checkInstances(() => {
-      daemon.sendCommands(requests, true, false, (response) => {
-        const serialized = JSON.stringify(requests);
-        const current = daemon.responses[serialized];
-        expect(response).toStrictEqual(expected);
-        expect(current.time).toBe(1634742080841);
-        expect(current.result).toStrictEqual(expected);
-        nock.cleanAll();
-        done();
-      });
-    });
-  });
 });

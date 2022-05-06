@@ -4,8 +4,8 @@
  *
  */
 
-const utils = require('../main/utils');
 const Merkle = require('../main/merkle');
+const utils = require('../main/utils');
 
 const data1 = [
   null,
