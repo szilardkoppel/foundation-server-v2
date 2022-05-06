@@ -45,7 +45,8 @@
     "bchaddrjs": "^0.5.2",
     "bignum": "^0.13.1",
     "foundation-multi-hashing": "0.1.1",
-    "foundation-utxo-lib": "0.0.2"
+    "foundation-utxo-lib": "0.0.2",
+    "sha3": "2.1.4"
   },
   "devDependencies": {
     "codecov": "^3.8.1",

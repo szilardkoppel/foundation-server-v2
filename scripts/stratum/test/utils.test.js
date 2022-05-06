@@ -51,6 +51,30 @@ describe('Test utility functionality', () => {
     expect(utils.bignumFromBitsHex('1e0ffff0').toNumber().toFixed(9)).toBe('1.1042625655198232e+71');
   });
 
+  test('Test implemented convertHashToBuffer', () => {
+    const hashes = [
+      { hash: '76a91477bff20c60e522dfaa3350c39b030a5d004e839a88ac' },
+      { hash: 'a914b472a266d0bd89c13706a4132ccfb16f7c3b9fcb87' },
+      { hash: '0014e8df018c7e326cc253faac7e46cdc51e68542c42' }];
+    const output = utils.convertHashToBuffer(hashes);
+    expect(output[0]).toBe(null);
+    expect(output[1].toString('hex')).toBe('00000000000000ac889a834e005d0a039bc35033aadf22e5600cf2bf7714a976');
+    expect(output[2].toString('hex')).toBe('00000000000000000087cb9f3b7c6fb1cf2c13a40637c189bdd066a272b414a9');
+    expect(output[3].toString('hex')).toBe('00000000000000000000422c54681ec5cd467eacfa53c26c327e8c01dfe81400');
+  });
+
+  test('Test implemented convertHashToBuffer', () => {
+    const hashes = [
+      { txid: '76a91477bff20c60e522dfaa3350c39b030a5d004e839a88ac' },
+      { txid: 'a914b472a266d0bd89c13706a4132ccfb16f7c3b9fcb87' },
+      { txid: '0014e8df018c7e326cc253faac7e46cdc51e68542c42' }];
+    const output = utils.convertHashToBuffer(hashes);
+    expect(output[0]).toBe(null);
+    expect(output[1].toString('hex')).toBe('00000000000000ac889a834e005d0a039bc35033aadf22e5600cf2bf7714a976');
+    expect(output[2].toString('hex')).toBe('00000000000000000087cb9f3b7c6fb1cf2c13a40637c189bdd066a272b414a9');
+    expect(output[3].toString('hex')).toBe('00000000000000000000422c54681ec5cd467eacfa53c26c327e8c01dfe81400');
+  });
+
   test('Test implemented getAuxMerklePosition', () => {
     expect(utils.getAuxMerklePosition(1, 5)).toBe(0);
     expect(utils.getAuxMerklePosition(5, 9)).toBe(6);

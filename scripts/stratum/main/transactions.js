@@ -12,7 +12,7 @@ const utils = require('./utils');
 const Transactions = function() {
 
   // Default Transaction Protocol
-  this.default = function(poolConfig, rpcData, extraNoncePlaceholder, auxMerkle) {
+  this.default = function(config, rpcData, placeholder, auxMerkle) {
 
     const txLockTime = 0;
     const txInSequence = 0;
@@ -21,8 +21,8 @@ const Transactions = function() {
     const txOutputBuffers = [];
 
     let txExtraPayload;
-    let txVersion = poolConfig.primary.coin.version;
-    const network = !poolConfig.settings.testnet ? poolConfig.primary.coin.mainnet : poolConfig.primary.coin.testnet;
+    let txVersion = config.primary.coin.version;
+    const network = !config.settings.testnet ? config.primary.coin.mainnet : config.primary.coin.testnet;
 
     // Handle Version w/ CoinbaseTxn
     if (rpcData.coinbasetxn && rpcData.coinbasetxn.data) {
@@ -38,10 +38,10 @@ const Transactions = function() {
     let reward = rpcData.coinbasevalue;
     let rewardToPool = reward;
     const coinbaseAux = rpcData.coinbaseaux.flags ? Buffer.from(rpcData.coinbaseaux.flags, 'hex') : Buffer.from([]);
-    const poolAddressScript = utils.addressToScript(poolConfig.primary.address, network);
+    const poolAddressScript = utils.addressToScript(config.primary.address, network);
 
     // Handle Timestamp if Necessary
-    const txTimestamp = poolConfig.primary.coin.hybrid === true ?
+    const txTimestamp = config.primary.coin.hybrid === true ?
       utils.packUInt32LE(rpcData.curtime) :
       Buffer.from([]);
 
@@ -49,13 +49,13 @@ const Transactions = function() {
       utils.serializeNumber(rpcData.height),
       coinbaseAux,
       utils.serializeNumber(Date.now() / 1000 | 0),
-      Buffer.from([extraNoncePlaceholder.length]),
+      Buffer.from([placeholder.length]),
     ]);
 
-    if (auxMerkle && poolConfig.auxiliary && poolConfig.auxiliary.enabled) {
+    if (auxMerkle && config.auxiliary && config.auxiliary.enabled) {
       scriptSig = Buffer.concat([
         scriptSig,
-        Buffer.from(poolConfig.auxiliary.coin.header, 'hex'),
+        Buffer.from(config.auxiliary.coin.header, 'hex'),
         utils.reverseBuffer(auxMerkle.root),
         utils.packUInt32LE(auxMerkle.data.length),
         utils.packUInt32LE(0)
@@ -69,7 +69,7 @@ const Transactions = function() {
       utils.varIntBuffer(1),
       utils.uint256BufferFromHash(txInPrevOutHash),
       utils.packUInt32LE(txInPrevOutIndex),
-      utils.varIntBuffer(scriptSig.length + extraNoncePlaceholder.length),
+      utils.varIntBuffer(scriptSig.length + placeholder.length),
       scriptSig
     ]);
 
@@ -191,7 +191,7 @@ const Transactions = function() {
 
     // Handle Secondary Transactions
     let founderReward, founderScript;
-    switch (poolConfig.primary.coin.rewards.type) {
+    switch (config.primary.coin.rewards.type) {
 
     // RTM-Based Transactions
     case 'raptoreum':
@@ -210,7 +210,7 @@ const Transactions = function() {
 
     // FIRO-Based Transactions
     case 'firocoin':
-      poolConfig.primary.coin.rewards.addresses.forEach((address) => {
+      config.primary.coin.rewards.addresses.forEach((address) => {
         founderReward = address.amount;
         founderScript = utils.addressToScript(address.address, network);
         // Block Reward Already Subtracts Founder Rewards (FiroCoin)
@@ -239,7 +239,7 @@ const Transactions = function() {
 
     // Handle Recipient Transactions
     let recipientTotal = 0;
-    poolConfig.primary.recipients.forEach(recipient => {
+    config.primary.recipients.forEach(recipient => {
       const recipientReward = Math.floor(recipient.percentage * reward);
       const recipientScript = utils.addressToScript(recipient.address, network);
       recipientTotal += recipientReward;

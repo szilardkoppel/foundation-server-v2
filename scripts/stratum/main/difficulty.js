@@ -51,6 +51,13 @@ const Difficulty = function(config) {
     return output;
   };
 
+  // Handle Individual Clients
+  this.handleClient = function(client) {
+
+    // Add Event Listener to Client Instance
+    client.on('submit', () => _this.handleDifficulty(client));
+  };
+
   // Handle Difficulty Updates
   this.handleDifficulty = function(client) {
 
@@ -80,11 +87,6 @@ const Difficulty = function(config) {
 
     // Update Retarget Time
     _this.lastRetargetTime = curTime;
-  };
-
-  // Handle Individual Clients
-  this.handleClient = function(client) {
-    client.on('submit', () => _this.handleDifficulty(client));
   };
 };
 

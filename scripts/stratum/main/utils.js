@@ -10,6 +10,8 @@ const bignum = require('bignum');
 const bitcoin = require('foundation-utxo-lib');
 const crypto = require('crypto');
 
+////////////////////////////////////////////////////////////////////////////////
+
 // Convert Address to Script
 exports.addressToScript = function(addr, network) {
   network = network || {};
@@ -19,7 +21,9 @@ exports.addressToScript = function(addr, network) {
   } else if (typeof network.coin !== 'undefined') {
     return bitcoin.address.toOutputScript(addr, network);
   } else {
-    return Buffer.concat([Buffer.from([0x76, 0xa9, 0x14]), bitcoin.address.fromBase58Check(addr).hash, Buffer.from([0x88, 0xac])]);
+    return Buffer.concat([
+      Buffer.from([0x76, 0xa9, 0x14]),
+      bitcoin.address.fromBase58Check(addr).hash, Buffer.from([0x88, 0xac])]);
   }
 };
 
@@ -41,6 +45,15 @@ exports.bignumFromBitsBuffer = function(bitsBuff) {
 exports.bignumFromBitsHex = function(bitsString) {
   const bitsBuff = Buffer.from(bitsString, 'hex');
   return exports.bignumFromBitsBuffer(bitsBuff);
+};
+
+// Convert Transaction Hashes to Buffers
+this.convertHashToBuffer = function(txs) {
+  const txHashes = txs.map((tx) => {
+    if (tx.txid !== undefined) return exports.uint256BufferFromHash(tx.txid);
+    return exports.uint256BufferFromHash(tx.hash);
+  });
+  return [null].concat(txHashes);
 };
 
 // Generate Unique ExtraNonce for each Subscriber
