@@ -115,7 +115,6 @@ const Interface = function(daemons) {
     });
 
     // HTTP Error Handling
-    /* istanbul ignore next */
     req.on('error', (e) => {
       if (!responded) {
         responded = true;

@@ -57,7 +57,6 @@ this.convertHashToBuffer = function(txs) {
 };
 
 // Generate Unique ExtraNonce for each Subscriber
-/* istanbul ignore next */
 exports.extraNonceCounter = function(size) {
   return {
     size: size,
@@ -102,7 +101,6 @@ exports.isHex = function(c) {
 };
 
 // Generate Unique Job for each Template
-/* istanbul ignore next */
 exports.jobCounter = function() {
   return {
     counter: 0,
@@ -246,7 +244,6 @@ exports.serializeNumber = function(n) {
 };
 
 // Serialize Strings used for Signature
-/* istanbul ignore next */
 exports.serializeString = function(s) {
   if (s.length < 253) {
     return Buffer.concat([
@@ -287,7 +284,6 @@ exports.sha256d = function(buffer) {
 };
 
 // Increment Count for Each Subscription
-/* istanbul ignore next */
 exports.subscriptionCounter = function() {
   let count = 0;
   const padding = 'deadbeefcafebabe';

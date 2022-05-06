@@ -227,8 +227,7 @@ const Algorithms = {
   'verthash': {
     multiplier: Math.pow(2, 8),
     diff: parseInt('0x00000000ff000000000000000000000000000000000000000000000000000000'),
-    hash: /* istanbul ignore next */ function() {
-      // Can't test due to "verthash.dat" file
+    hash: function() {
       return function() {
         return hashing.verthash.apply(this, arguments);
       };

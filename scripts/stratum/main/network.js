@@ -49,7 +49,6 @@ const Network = function(config, configMain, authorizeFn) {
   };
 
   // Handle Broadcasting New Jobs to Clients
-  /* istanbul ignore next */
   this.broadcastMiningJobs = function(template, cleanJobs) {
 
     // Send New Jobs to Clients
@@ -103,7 +102,6 @@ const Network = function(config, configMain, authorizeFn) {
   };
 
   // Setup Stratum Network Functionality
-  /* istanbul ignore next */
   this.setupNetwork = function() {
 
     // Interval to Clear Old Bans from BannedIPs

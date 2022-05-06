@@ -64,7 +64,6 @@ const Merkle = function(data) {
   };
 
   // Calculate Merkle Hash Proof
-  /* istanbul ignore next */
   this.getHashProof = function(hash) {
     let data = this.data;
     if (data.length === 1) {
